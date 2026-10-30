@@ -1,7 +1,7 @@
 {
-  "name": "express-book-review-final-project",
+  "name": "expressbookreviews",
   "version": "1.0.0",
-  "description": "IBM Node.js and Express book review final project starter",
+  "description": "IBM Node.js and Express Book Review final project",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
-    "bcryptjs": "^2.4.3",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2"

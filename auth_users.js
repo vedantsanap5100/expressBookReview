@@ -1,50 +1,63 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const books = require('../data/books.json');
-const router = express.Router();
+const books = require('./booksdb.js');
+const regdUsers = express.Router();
+const users = [];
 
-const users = new Map();
+const isValid = (username) => users.some((user) => user.username === username);
+const authenticatedUser = (username, password) =>
+  users.some((user) => user.username === username && user.password === password);
 
-// Register a new user
-router.post('/register', async (req, res) => {
+// Register
+regdUsers.post('/register', (req, res) => {
   const { username, password } = req.body || {};
-  if (!username || !password) return res.status(400).json({ message: 'Username and password are required' });
-  if (users.has(username)) return res.status(409).json({ message: 'Username already exists' });
-  const hash = await bcrypt.hash(password, 10);
-  users.set(username, { password: hash });
-  return res.status(201).json({ message: 'User successfully registered. Now you can login.' });
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+  if (isValid(username)) {
+    return res.status(409).json({ message: 'User already exists' });
+  }
+  users.push({ username, password });
+  return res.status(200).json({ message: 'User successfully registered. Now you can login' });
 });
 
 // Login
-router.post('/login', async (req, res) => {
+regdUsers.post('/login', (req, res) => {
   const { username, password } = req.body || {};
-  const user = users.get(username);
-  if (!user || !(await bcrypt.compare(password || '', user.password))) {
+  if (!authenticatedUser(username, password)) {
     return res.status(401).json({ message: 'Invalid username or password' });
   }
-  const token = jwt.sign({ username }, process.env.JWT_SECRET || 'change-this-jwt-secret', { expiresIn: '2h' });
-  req.session.token = token;
-  return res.json({ message: 'Login successful', token });
+  const accessToken = jwt.sign({ username }, 'access', { expiresIn: '1h' });
+  req.session.authorization = { accessToken };
+  return res.status(200).json({ message: 'Login successful!' });
 });
 
-// Add or update own review for a book
-router.put('/auth/review/:isbn', (req, res) => {
-  const book = books.find(b => b.isbn === req.params.isbn);
-  if (!book) return res.status(404).json({ message: 'Book not found' });
-  const { review } = req.body || {};
-  if (!review) return res.status(400).json({ message: 'Review is required' });
-  book.reviews[req.user.username] = review;
-  return res.json({ message: 'Review added/updated successfully', reviews: book.reviews });
+// Add or update a review
+regdUsers.put('/auth/review/:isbn', (req, res) => {
+  const isbn = String(req.params.isbn);
+  if (!books[isbn]) return res.status(404).json({ message: 'Book not found' });
+  const review = req.body && req.body.review;
+  if (typeof review !== 'string' || !review.trim()) {
+    return res.status(400).json({ message: 'Review is required' });
+  }
+  books[isbn].reviews[req.user.username] = review;
+  return res.status(200).json({
+    message: 'Review added/updated successfully',
+    reviews: books[isbn].reviews
+  });
 });
 
-// Delete own review
-router.delete('/auth/review/:isbn', (req, res) => {
-  const book = books.find(b => b.isbn === req.params.isbn);
-  if (!book) return res.status(404).json({ message: 'Book not found' });
-  if (!book.reviews[req.user.username]) return res.status(404).json({ message: 'Review not found for this user' });
-  delete book.reviews[req.user.username];
-  return res.json({ message: 'Review deleted successfully', reviews: book.reviews });
+// Delete the logged-in user's review
+regdUsers.delete('/auth/review/:isbn', (req, res) => {
+  const isbn = String(req.params.isbn);
+  if (!books[isbn]) return res.status(404).json({ message: 'Book not found' });
+  if (!Object.prototype.hasOwnProperty.call(books[isbn].reviews, req.user.username)) {
+    return res.status(404).json({ message: 'No review found for this user' });
+  }
+  delete books[isbn].reviews[req.user.username];
+  return res.status(200).json({ message: `Review for ISBN ${isbn} deleted` });
 });
 
-module.exports = router;
+module.exports.authenticated = regdUsers;
+module.exports.isValid = isValid;
+module.exports.users = users;
