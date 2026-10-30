@@ -1,0 +1,50 @@
+[
+  {
+    "isbn": "9780140449136",
+    "title": "The Odyssey",
+    "author": "Homer",
+    "reviews": {
+      "initial": "A classic epic poem."
+    }
+  },
+  {
+    "isbn": "9780061120084",
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "reviews": {
+      "initial": "A powerful novel about justice and empathy."
+    }
+  },
+  {
+    "isbn": "9780743273565",
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "reviews": {
+      "initial": "A concise portrait of ambition and the American Dream."
+    }
+  },
+  {
+    "isbn": "9780451524935",
+    "title": "1984",
+    "author": "George Orwell",
+    "reviews": {
+      "initial": "A thought-provoking dystopian novel."
+    }
+  },
+  {
+    "isbn": "9780141439518",
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "reviews": {
+      "initial": "A witty and enduring classic."
+    }
+  },
+  {
+    "isbn": "9780316769488",
+    "title": "The Catcher in the Rye",
+    "author": "J. D. Salinger",
+    "reviews": {
+      "initial": "A distinctive coming-of-age story."
+    }
+  }
+]
